@@ -35,6 +35,9 @@ jobs:
     - name: Build M5Stamp Pico firmware
       run: pio run -e m5stamp-pico
     
+    - name: Run unit tests
+      run: pio test -e native
+    
     - name: Run static analysis
       run: pio check -e m5stamp-pico --skip-packages
       continue-on-error: true
