@@ -26,10 +26,10 @@ monitor:
 # ビルド、アップロード後にモニター
 flash: upload monitor
 
-# テストの実行
+# テストの実行(native)
 test:
 	@echo "テストを実行中..."
-	platformio test
+	platformio test -e native
 
 # 初期セットアップ
 setup:
@@ -109,7 +109,7 @@ help:
 	@echo "  make clean        - ビルドファイルのクリーンアップ"
 	@echo "  make rebuild      - クリーンアップ後リビルド"
 	@echo "  make full         - フルサイクル実行"
-	@echo "  make test         - テストの実行"
+	@echo "  make test         - テストの実行(native)"
 	@echo "  make setup        - 初期セットアップ"
 	@echo "  make lib-install  - ライブラリのインストール"
 	@echo "  make lib-update   - ライブラリのアップデート"
