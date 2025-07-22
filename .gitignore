@@ -30,3 +30,50 @@
 *.exe
 *.out
 *.app
+
+# PlatformIO
+.pio
+.pioenvs
+.piolibdeps
+.clang_complete
+.gcc-flags.json
+
+# VSCode
+.vscode/*
+!.vscode/settings.json
+!.vscode/tasks.json
+!.vscode/launch.json
+!.vscode/extensions.json
+*.code-workspace
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Build outputs
+*.bin
+*.elf
+*.map
+
+# Logs
+*.log
+
+# Temporary files
+*.tmp
+*.swp
+*~
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+.Python
+env/
+venv/
+
+# IDE
+.idea/
+*.iml
+
+# Project specific
+compile_commands.json
