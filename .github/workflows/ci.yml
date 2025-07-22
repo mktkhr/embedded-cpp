@@ -1,0 +1,84 @@
+name: PlatformIO CI
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - uses: actions/checkout@v4
+    
+    - name: Cache PlatformIO
+      uses: actions/cache@v3
+      with:
+        path: |
+          ~/.platformio/.cache
+          ~/.platformio/packages
+          ~/.platformio/platforms
+        key: ${{ runner.os }}-pio-${{ hashFiles('**/platformio.ini') }}
+        restore-keys: |
+          ${{ runner.os }}-pio-
+    
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.11'
+    
+    - name: Install PlatformIO Core
+      run: pip install --upgrade platformio
+    
+    - name: Build M5Stamp Pico firmware
+      run: pio run -e m5stamp-pico
+    
+    - name: Run static analysis
+      run: pio check -e m5stamp-pico --skip-packages
+      continue-on-error: true
+    
+    - name: Archive firmware artifacts
+      uses: actions/upload-artifact@v3
+      with:
+        name: firmware-m5stamp-pico
+        path: .pio/build/m5stamp-pico/firmware.*
+        retention-days: 30
+
+  code-quality:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - uses: actions/checkout@v4
+    
+    - name: Install clang-format
+      run: sudo apt-get update && sudo apt-get install -y clang-format
+    
+    - name: Check C++ code formatting
+      run: |
+        find src include -name "*.cpp" -o -name "*.h" | xargs clang-format --dry-run --Werror
+      continue-on-error: true
+    
+    - name: Check for TODO/FIXME comments
+      run: |
+        echo "Checking for TODO/FIXME comments..."
+        grep -r "TODO\|FIXME" src/ include/ || echo "No TODO/FIXME found"
+      continue-on-error: true
+
+  security:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - uses: actions/checkout@v4
+    
+    - name: Check for hardcoded secrets
+      run: |
+        echo "Checking for potential hardcoded secrets..."
+        grep -ri "password\|secret\|key\|token" src/ include/ --exclude-dir=.git || echo "No hardcoded secrets found"
+      continue-on-error: true
+    
+    - name: Check file permissions
+      run: |
+        echo "Checking for executable source files..."
+        find src include -type f \( -name "*.cpp" -o -name "*.h" \) -executable || echo "No executable source files found"
