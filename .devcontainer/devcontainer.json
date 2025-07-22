@@ -1,0 +1,33 @@
+{
+  "name": "PlatformIO",
+  "image": "mcr.microsoft.com/devcontainers/cpp:1-debian-12",
+  "features": {
+    "ghcr.io/devcontainers/features/python:1": {
+      "version": "3.11"
+    },
+    "ghcr.io/devcontainers/features/node:1": {
+      "version": "lts"
+    }
+  },
+  "customizations": {
+    "vscode": {
+      "extensions": [
+        "platformio.platformio-ide",
+        "ms-vscode.cpptools",
+        "ms-vscode.cmake-tools"
+      ],
+      "settings": {
+        "terminal.integrated.defaultProfile.linux": "bash"
+      }
+    }
+  },
+  "postCreateCommand": "pip install --user platformio && echo 'export PATH=$PATH:$HOME/.local/bin' >> ~/.bashrc && npm install -g @anthropic-ai/claude-code && bash .devcontainer/setup.sh",
+  "postStartCommand": "echo '\"make help\" を実行することで，実行コマンド一覧を確認できます'",
+  "remoteUser": "vscode",
+  "mounts": [
+    "source=/dev,target=/dev,type=bind"
+  ],
+  "runArgs": [
+    "--device-cgroup-rule=c 188:* rmw"
+  ]
+}
