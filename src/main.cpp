@@ -13,6 +13,8 @@
 #include "FS.h"
 #include "driver/adc.h"
 #include "esp_adc_cal.h"
+#include "soc/rtc_cntl_reg.h"
+#include "soc/soc.h"
 #include <FastLED.h>
 #include "index_html.h"
 #include "version.h"
@@ -71,6 +73,8 @@ M5_DLight bh1750;
 
 void setup()
 {
+  // Brownout検出を無効化 (電源安定化のため)
+  WRITE_PERI_REG(RTC_CNTL_BROWN_OUT_REG, 0);
 
   Serial.begin(115200);
   while (!Serial)
@@ -78,6 +82,7 @@ void setup()
   }
 
   Wire.begin(sda, scl);
+  delay(100);  // I2Cバス安定化待ち
 
   bh1750.begin(&Wire, sda, scl);
   bh1750.setMode(CONTINUOUSLY_H_RESOLUTION_MODE);
@@ -95,8 +100,21 @@ void setup()
   {
     bootMode = 1;
     Serial.println("Starting web server.....");
+    delay(2000);  // 電源安定化待ち
+
+    // WiFi起動前に一度電源を安定させる
+    led[0] = 0x000000;
+    FastLED.show();
+    delay(500);
+
     WiFi.mode(WIFI_AP);
+    delay(500);
+
+    // WiFi送信パワーを下げて電力消費を抑える
+    WiFi.setTxPower(WIFI_POWER_11dBm);  // 最低パワー
+
     WiFi.softAPConfig(ip, ip, subnet);
+    delay(500);
     if (WiFi.softAP(ssid_server, pass_server))
     {
       led[0] = 0x0000ff;
