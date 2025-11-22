@@ -69,9 +69,12 @@ Adafruit_SGP30 sgp;
 esp_adc_cal_characteristics_t adcChar;
 M5_DLight bh1750;
 
-void setup() {
+void setup()
+{
+
   Serial.begin(115200);
-  while (!Serial) {
+  while (!Serial)
+  {
   }
 
   Wire.begin(sda, scl);
@@ -88,15 +91,19 @@ void setup() {
   pinMode(BUTTON_PIN, INPUT);
   bool buttonState = digitalRead(BUTTON_PIN);
 
-  if (buttonState == LOW) {
+  if (buttonState == LOW)
+  {
     bootMode = 1;
     Serial.println("Starting web server.....");
     WiFi.mode(WIFI_AP);
     WiFi.softAPConfig(ip, ip, subnet);
-    if (WiFi.softAP(ssid_server, pass_server)) {
+    if (WiFi.softAP(ssid_server, pass_server))
+    {
       led[0] = 0x0000ff;
       FastLED.show();
-    } else {
+    }
+    else
+    {
       led[0] = 0x00f000;
       FastLED.show();
       delay(5000);
@@ -112,33 +119,43 @@ void setup() {
     Server.onNotFound(handleNotFound);
     Server.begin();
   }
-  while (bootMode == 1) {
+  while (bootMode == 1)
+  {
     Server.handleClient();
   }
 
-  for (int i = 0; i < 3; i++) {
-    if (SD.begin(SD_PIN)) {
+  for (int i = 0; i < 3; i++)
+  {
+    if (SD.begin(SD_PIN))
+    {
       sdFlag = true;
       break;
     }
   }
 
-  if (sdFlag == true) {
+  if (sdFlag == true)
+  {
     Serial.println("SD card Connection done");
     File file = SD.open("/log.csv");
-    if (!file) {
+    if (!file)
+    {
       String first_row = "Timestamp,Serial number,# of SDI-12 sensor,Address,Volumetric water content,Soil temperature,Bulk relative permittivity,Soil bulk electric conductivity(TDT),Soil bulk electric conductivity(TDR),Soil pore water electric coductivity,Gravitational acceleration(x-axis),Gravitational accelaration(y-axis),Gravitational accelaration(z-axis),Address,Volumetric water content,Soil temperature,Bulk relative permittivity,Soil bulk electric conductivity(TDT),Soil bulk electric conductivity(TDR),Soil pore water coductivity,Gravitational acceleration(x-axis),Gravitational acceleration(y-axis),Gravitational acceleration(z-axis),Address,Volumetric water content,Soil temperature,Bulk relative permittivity,Soil bulk electric conductivity(TDT),Soil bulk electric conductivity(TDR),Soil pore water coductivity,Gravitational acceleration(x-axis),Gravitational acceleration(y-axis),Gravitational acceleration(z-axis),Address,Volumetric water content,Soil temperature,Bulk relative permittivity,Soil bulk electric conductivity(TDT),Soil bulk electric conductivity(TDR),Soil pore water coductivity,Gravitational acceleration(x-axis),Gravitational acceleration(y-axis),Gravitational acceleration(z-axis),Atmospheric pressure,Temperature,Humidity,CO2 concentration,Total volatile organic compounds,Illumination,Analog value,Voltage\n";
       String second_row = "(YYYY/MM/DD hh:mm:ss),(-),(-),(-),(%),(C),(-),(dS/m),(uS/cm),(uS/cm),(G),(G),(G),(-),(%),(C),(-),(dS/m),(uS/cm),(uS/cm),(G),(G),(G),(-),(%),(C),(-),(dS/m),(uS/cm),(μS/cm),(G),(G),(G),(-),(%),(C),(-),(dS/m),(uS/cm),(uS/cm),(G),(G),(G),(hPa),(C),(%),(ppm),(ppb),(lux),(-),(V)\n";
       appendFile("/log.csv", first_row);
       appendFile("/log.csv", second_row);
     }
-  } else {
+  }
+  else
+  {
     Serial.println("Card Mount Failed");
   }
 
-  if (!sgp.begin()) {
+  if (!sgp.begin())
+  {
     Serial.println("Sensor not found");
-  } else {
+  }
+  else
+  {
     Serial.print("Found SGP30 serial #");
     Serial.println(sgp.serialnumber[0], HEX);
   }
@@ -154,7 +171,8 @@ void setup() {
   ssidRead.toCharArray(ssid, ssidRead.length() + 1);
   passwordRead.toCharArray(password, passwordRead.length() + 1);
   const bool wifiStatus = connectToAccessPoint(ssid, password);
-  if (!wifiStatus) {
+  if (!wifiStatus)
+  {
     led[0] = 0xff0000;
     FastLED.show();
     delay(5000);
@@ -169,9 +187,11 @@ void setup() {
   measurementTargetSensorAddress = readPreference(5);
 }
 
-void loop() {
+void loop()
+{
   getLocalTime(&timeInfo);
-  if ((timeInfo.tm_min % measurementInterval == 0) && (timeInfo.tm_sec == 0)) {
+  if ((timeInfo.tm_min % measurementInterval == 0) && (timeInfo.tm_sec == 0))
+  {
     sprintf(timeData, "%04d/%02d/%02d %02d:%02d:%02d", timeInfo.tm_year + 1900, timeInfo.tm_mon + 1, timeInfo.tm_mday, timeInfo.tm_hour, timeInfo.tm_min, timeInfo.tm_sec);
     Serial.println(timeData);
     String macAddress = WiFi.macAddress();
@@ -187,9 +207,12 @@ void loop() {
 
     int sensorNum;
     int addressLength = measurementTargetSensorAddress.length();
-    if (addressLength == 0) {
+    if (addressLength == 0)
+    {
       sensorNum = 0;
-    } else {
+    }
+    else
+    {
       sensorNum = (addressLength / 2) + 1;
     }
 
@@ -199,16 +222,20 @@ void loop() {
     String sdiResultForSd = "";
     String sdiResultForPost = "";
     postString += "\"sdi12Param\": [";
-    for (int i = 0; i < sensorNum; i++) {
+    for (int i = 0; i < sensorNum; i++)
+    {
       String sdi12Response = measureSdi12(measurementTargetAddressArray[i]);
       sdiResultForSd += "," + convertSdi12ResultForSd(sdi12Response);
       sdiResultForPost += convertSdi12ResultForPost(sdi12Response);
-      if (i != sensorNum - 1 && sdiResultForPost != "") {
+      if (i != sensorNum - 1 && sdiResultForPost != "")
+      {
         sdiResultForPost += ",";
       }
     }
-    if (maxSdi12SensorNum > sensorNum) {
-      for (int i = 0; i < (maxSdi12SensorNum - sensorNum); i++) {
+    if (maxSdi12SensorNum > sensorNum)
+    {
+      for (int i = 0; i < (maxSdi12SensorNum - sensorNum); i++)
+      {
         sdiResultForSd += ",,,,,,,,,,";
       }
     }
@@ -223,12 +250,14 @@ void loop() {
     postString += convertSgp30ResultForPost(sgp30Result);
 
     String illuminationResult = measureIllumination();
-    if (illuminationResult != "") {
+    if (illuminationResult != "")
+    {
       postString += "\"light\":\"" + illuminationResult + "\",";
     }
 
     String analogResult = readAnalogValue();
-    if (illuminationResult != "") {
+    if (illuminationResult != "")
+    {
       postString += "\"analogValue\":\"" + analogResult + "\"";
     }
 
